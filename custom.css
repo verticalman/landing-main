@@ -1,0 +1,28 @@
+/* Custom overrides for local clone branding */
+
+/* Overlay your own logo without depending on the site's internal classes */
+.custom-brand-logo {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999; /* above site header */
+  width: 120px;
+  height: auto;
+  display: block;
+  pointer-events: auto;
+}
+
+/* Replaced header logo image styling */
+.my-header-logo {
+  height: 18px;
+  width: auto;
+  display: block;
+}
+
+/* Ensure anchor containing logo keeps proper layout */
+header a[href="/"],
+header .c-logo,
+header .logo {
+  display: inline-flex;
+  align-items: center;
+}
