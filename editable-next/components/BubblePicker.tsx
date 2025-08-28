@@ -74,7 +74,7 @@ const BubblePicker = forwardRef<BubblePickerHandle, Props>(function BubblePicker
       {/* optional pill trigger */}
       {renderTrigger && (
         <div
-          className={`${styles.pill} ${current ? (styles as any)[`col${current.label.replace(/\s+/g, '')}`] : ''}`}
+          className={`${styles.pill}`}
           onDoubleClick={() => setOpen(v => !v)}
           role="button"
           aria-haspopup="menu"
@@ -82,7 +82,7 @@ const BubblePicker = forwardRef<BubblePickerHandle, Props>(function BubblePicker
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter') setOpen(v => !v); }}
         >
-          <span className={`${styles.dot} ${current ? (styles as any)[`dot${current.label.replace(/\s+/g, '')}`] : ''}`} />
+          <span className={`${styles.dot}`} />
           {current ? current.label : idleLabel}
           <span className={styles.chev}>▾</span>
         </div>
@@ -101,7 +101,7 @@ const BubblePicker = forwardRef<BubblePickerHandle, Props>(function BubblePicker
                 onClick={() => select(opt.value)}
                 title={opt.label}
               >
-                <span className={`${styles.dot} ${(styles as any)[`dot${opt.label.replace(/\s+/g, '')}`]}`} />
+                <span className={`${styles.dot}`} />
                 {opt.label}
               </button>
             ))}

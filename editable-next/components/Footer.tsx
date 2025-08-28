@@ -50,26 +50,43 @@ export default function Footer({ mainRef }: { mainRef?: React.RefObject<HTMLElem
     e.preventDefault();
     if (typeof window === "undefined") return;
     const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const topEl = document.getElementById('top');
     if (prefersReduced) {
-      try { window.scrollTo(0, 0); } catch {}
+      if (topEl && topEl.scrollIntoView) {
+        try { topEl.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch { try { window.scrollTo(0, 0); } catch {} }
+      } else {
+        try { window.scrollTo(0, 0); } catch {}
+      }
       return;
     }
-    try {
-      window.scrollTo({ top: 0, behavior: 'smooth' as ScrollBehavior });
-    } catch {
-      // manual fallback
+    // Prefer native smooth scroll to the hero element
+    let usedNative = false;
+    if (topEl && topEl.scrollIntoView) {
+      try { topEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); usedNative = true; } catch {}
+    }
+    if (!usedNative) {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' as ScrollBehavior }); usedNative = true; } catch {}
+    }
+    // Manual fallback animation if needed
+    if (!usedNative) {
       const startY = window.scrollY || window.pageYOffset || 0;
-      const duration = 600;
-      const start = performance.now();
-      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-      const step = (now: number) => {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = easeOutCubic(t);
-        const y = Math.round(startY * (1 - eased));
-        window.scrollTo(0, y);
-        if (t < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+      if (startY > 0) {
+        const duration = 600;
+        const start = performance.now();
+        const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = easeOutCubic(t);
+          const y = Math.round(startY * (1 - eased));
+          window.scrollTo(0, y);
+          if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }
+    // Keep URL clean (avoid leaving #top in the bar if anything set it elsewhere)
+    if (location.hash) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch {}
     }
   };
 
