@@ -1,0 +1,36 @@
+{
+  "name": "Fater",
+  "short_name": "Fater",
+  "description": "Redefining design with agentic AI for the built world. Backed by NVIDIA & Microsoft.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07070A",
+  "theme_color": "#121217",
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 64x64 128x128",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/fater-ai-logo-white.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "protocol_handlers": [],
+  "categories": ["productivity", "business", "utilities"],
+  "related_applications": []
+}

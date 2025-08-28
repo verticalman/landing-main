@@ -1,13 +1,7 @@
-import type { Metadata } from "next";
-import ShaderExportClient from "./Client";
+import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Shader Export",
-  description: "Render the hero shader at 1200x630 and export as PNG.",
-  robots: { index: false, follow: false },
-  alternates: { canonical: "/shader-export" },
-};
-
+// This temporary tool page has been removed intentionally.
+// Keep the route to avoid broken imports, but return 404.
 export default function ShaderExportPage() {
-  return <ShaderExportClient />;
+  notFound();
 }

@@ -61,5 +61,36 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     }
   }
 
-  return <PostClient post={post} html={html} />;
+  const url = `${SITE.url}/blog/${post.slug}`;
+  const imageUrl = post.image ? `${SITE.url}${post.image}` : undefined;
+
+  return (
+    <>
+      {/* JSON-LD: BlogPosting */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: post.title,
+            description: post.description,
+            image: imageUrl ? [imageUrl] : undefined,
+            datePublished: post.date,
+            dateModified: post.date,
+            author: post.author
+              ? { "@type": "Person", name: post.author }
+              : { "@type": "Organization", name: "Fater" },
+            mainEntityOfPage: { "@type": "WebPage", "@id": url },
+            publisher: {
+              "@type": "Organization",
+              name: "Fater",
+              logo: { "@type": "ImageObject", url: `${SITE.url}/fater-ai-logo-white.png` },
+            },
+          }),
+        }}
+      />
+      <PostClient post={post} html={html} />
+    </>
+  );
 }

@@ -38,7 +38,13 @@ export const metadata: Metadata = {
     title: 'Fater — Create the world.',
     description: 'Redefining design with agentic AI. We enable design and development teams to build and scale their creative processes with unprecedented control. Backed by NVIDIA & Microsoft.',
     images: ['/og.jpg'],
-  }
+  },
+  themeColor: '#121217',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest'
 };
 
 import './globals.css';
@@ -69,6 +75,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           as="font"
           type="font/woff"
           crossOrigin="anonymous"
+        />
+        {/* JSON-LD: Organization */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Fater",
+              alternateName: ["Fater AI"],
+              url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://fater.ai/'),
+              logo: ((process.env.NEXT_PUBLIC_SITE_URL || 'https://fater.ai').replace(/\/$/, '')) + '/fater-ai-logo-white.png',
+              sameAs: [
+                'https://www.linkedin.com/company/fater-ai/',
+                'https://x.com/thefaterai',
+                'https://www.instagram.com/thefaterai',
+              ],
+            }),
+          }}
         />
       </head>
       <body className={spaceGrotesk.className}>{children}</body>

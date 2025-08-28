@@ -10,9 +10,13 @@ export type Post = {
   markdownPath?: string; // relative path to markdown file in repo (e.g., 'public/Design as Dialogue.md')
 };
 
+// Normalize base URL to avoid trailing slash issues (e.g., https://fater.ai/ -> https://fater.ai)
+const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+const NORMALIZED_SITE_URL = RAW_SITE_URL.replace(/\/$/, '');
+
 export const SITE = {
   name: 'Fater',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com',
+  url: NORMALIZED_SITE_URL,
   twitter: '@fater',
 };
 
