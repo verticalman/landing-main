@@ -1,0 +1,27 @@
+{
+  "name": "editable-next",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "marked": "^16.2.1",
+    "next": "14.2.5",
+    "openai": "^5.15.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "simple-icons": "^15.11.0",
+    "googleapis": "^140.0.1",
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "@types/react": "19.1.10",
+    "typescript": "5.9.2"
+  }
+}

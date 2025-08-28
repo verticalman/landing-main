@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <path id="circlePath" d="M60,60 m -48,0 a 48,48 0 1,1 96,0 a 48,48 0 1,1 -96,0"/>
+  </defs>
+  <g fill="none" stroke="none">
+    <!-- Dots placed exactly at 0% and 50% -->
+    <text fill="#FFFFFF" fill-opacity="0.85" font-size="12" font-family="Roobert, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+      <textPath href="#circlePath" startOffset="0%">•</textPath>
+      <textPath href="#circlePath" startOffset="50%">•</textPath>
+    </text>
+    <!-- Two phrases centered within each half of the circle (nudged for visual centering) -->
+    <text fill="#FFFFFF" fill-opacity="0.85" font-size="12" letter-spacing="1.7" font-family="Roobert, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+      <textPath href="#circlePath" startOffset="24.4%" text-anchor="middle">SCROLL DOWN</textPath>
+      <textPath href="#circlePath" startOffset="74.4%" text-anchor="middle">SCROLL DOWN</textPath>
+    </text>
+    <!-- centered Fater logo (28x28 centered at 60,60 => x=46,y=46) -->
+    <image xlink:href="/fater-ai-logo-white.png" href="/fater-ai-logo-white.png" x="46" y="46" width="28" height="28" opacity="0.98" style="pointer-events:none"/>
+  </g>
+</svg>

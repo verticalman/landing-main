@@ -1,0 +1,1552 @@
+/* Generic rotate animation for spinners */
+@keyframes rotate360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.partnersCompact::before,
+.partnersCompact::after,
+.partnersCompact .partnersFade {
+  display: none !important;
+  content: none !important;
+  height: 0 !important;
+}
+.partnersCompact .partnersFade {
+  height: auto;
+  opacity: 1;
+}
+.main {
+  --page-pad: 48px;
+  --corner-pad: 20px; /* increased top breathing room relative to edges */
+  --bgw: 0; /* 0 black -> 1 white */
+  /* Step invert used by masked assets (0 = white on dark, 1 = black on light) */
+  --inv: clamp(0, (var(--bgw, 0) - 0.5) * 9999, 1);
+  color: #fff;
+  /* Blend black to white based on --bgw. Fallback to black if color-mix unsupported */
+  background: #0d0d0d;
+  background: color-mix(in oklab, #ffffff calc(var(--bgw, 0) * 100%), #0d0d0d);
+  min-height: 100vh;
+}
+/* Tighter edge padding on mobile to match reference */
+@media (max-width: 900px) {
+  .main { --page-pad: 26px; --corner-pad: 22px; }
+}
+@media (max-width: 420px) {
+  .main { --page-pad: 24px; --corner-pad: 24px; }
+}
+/* When applied to main, hide the cursor globally */
+.noCursor { cursor: none; }
+
+
+.verticalsSection {
+  position: relative;
+  padding: 80px 0; /* similar rhythm to news */
+  background: inherit;
+  color: #fff;
+}
+.verticalsInner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.verticalsTitle {
+  margin: 0 0 26px 0;
+  font-size: clamp(26px, 4.6vw, 44px);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+.verticalsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 900px) {
+  .verticalsGrid { grid-template-columns: 1fr 1fr 1fr; }
+}
+.verticalCard {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 18px;
+  border-radius: 14px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+}
+.vCardTitle { font-size: clamp(16px, 2.2vw, 20px); margin: 0 0 12px 0; font-weight: 600; }
+.vList { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.vList li { position: relative; padding-left: 18px; line-height: 1.5; color: rgba(255,255,255,0.86); }
+.vList li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Media placeholder for vertical cards */
+.vMedia {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  margin-bottom: 14px;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.vMedia img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Footer bottom bar */
+.footerBottom { 
+  background: rgba(0,0,0,0.9);
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.footerBottomInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  grid-template-columns: 1fr;
+  justify-items: center; /* center children horizontally */
+  align-items: center;
+  text-align: center; /* center text within each row */
+  gap: 12px;
+}
+/* Social row */
+.footerSocial {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  justify-content: center; /* center links */
+}
+.footerSocial a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+.footerSocial a:hover { text-decoration: underline; opacity: 1; }
+/* Address row */
+.footerAddress {
+  color: rgba(255,255,255,0.9);
+  font-size: 12px;
+}
+/* Legal row */
+.footerLegal {
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* center legal inline */
+  align-items: center;
+}
+.footerLegal a { color: #fff; text-decoration: none; }
+.footerLegal a:hover { text-decoration: underline; }
+@media (min-width: 900px) {
+  .footerBottomInner { padding: 18px 24px; gap: 14px; }
+}
+
+/* Latest news section */
+.newsSection { 
+  position: relative;
+  padding: var(--section-v-pad) 0; 
+  background: inherit; 
+  color: #fff; 
+  /* Extra space before Partners section */
+  margin-bottom: 80px;
+}
+.newsInner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.newsTitle {
+  margin: 0 0 26px 0;
+  font-size: clamp(26px, 4.6vw, 44px);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+.newsGrid { 
+  display: grid; 
+  grid-template-columns: 1fr; 
+  gap: 24px; 
+}
+@media (min-width: 800px) {
+  .newsGrid { grid-template-columns: 1fr 1fr; }
+}
+@keyframes newsIn {
+  0% { opacity: 0; transform: translateY(26px); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.newsCard { 
+  background: rgba(255,255,255,0.03); 
+  border: 1px solid rgba(255,255,255,0.08); 
+  padding: 22px; 
+  border-radius: 14px; 
+  transition: border-color .3s ease, background .3s ease; /* keep hover transitions separate */
+  backdrop-filter: blur(4px);
+  opacity: 0; 
+  transform: translateY(26px);
+}
+.cardIn .newsCard, .newsCard.cardIn { 
+  animation: newsIn 900ms cubic-bezier(0.22, 1, 0.36, 1) var(--stagger, 0ms) forwards; 
+}
+.newsCard:hover { 
+  transform: translateY(-2px); 
+  background: rgba(255,255,255,0.06); 
+  border-color: rgba(255,255,255,0.18); 
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsCard { opacity: 1; transform: none; animation: none !important; }
+}
+.newsLink { color: inherit; text-decoration: none; display: grid; gap: 10px; }
+.newsMeta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+/* Row under the grid to link to our internal blog */
+.newsMoreRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 12px;
+}
+.newsMoreLink {
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.newsMoreLink:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.28);
+}
+@media (max-width: 800px) {
+  .newsMoreRow { justify-content: center; }
+}
+/* Meta row: date + source logo */
+.newsMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.newsMetaLogo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+}
+.newsHeadline {
+  font-size: clamp(18px, 2.6vw, 26px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.newsReadMore { font-size: 12px; opacity: 0.9; }
+
+/* Description and tags below headline */
+.newsDesc {
+  margin: 6px 0 6px;
+  color: rgba(255,255,255,0.78);
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 600px) {
+  .newsDesc { font-size: 13px; }
+}
+.newsTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+.newsTag {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  border: 1px solid rgba(255,255,255,0.16);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* News images */
+.newsImageWrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0a0a0a; /* close to section black */
+  aspect-ratio: 16 / 9;
+  transform: translateY(var(--py, 0px));
+  will-change: transform;
+}
+
+/* Footer form error */
+.contactError {
+  color: #ffb4b4;
+  font-size: 12px;
+  margin-left: 12px;
+}
+.newsImageSkeleton {
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+  animation: shimmer 1.4s infinite;
+}
+.newsImage {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transform: scale(1.02);
+  filter: saturate(1.05) contrast(1.02);
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1), opacity 600ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Segmented control (Industry) */
+.segmentedGroup { border: 0; padding: 0; margin: 8px 0 0; }
+.segmentedLabel { font-size: 12px; color: #9aa4af; margin: 12px 0 6px; }
+.segmented { display: flex; flex-wrap: wrap; gap: 8px; }
+.segment {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px;
+  background: #11161c; color: #e6edf3; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.segment:hover { border-color: rgba(255,255,255,0.18); }
+.segmentSelected { background: #244e86; border-color: #467cc5; }
+.segmentDot { width: 8px; height: 8px; border-radius: 50%; background: #5fb0ff; opacity: 0.0; transition: opacity 180ms ease; }
+.segmentSelected .segmentDot { opacity: 1; }
+.visuallyHidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.newsCard:hover .newsImage { transform: scale(1.05); }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Make hero a positioning context for anchored elements */
+.hero {
+  position: relative;
+}
+/* Single header rule using shared padding */
+.header { position: fixed; inset: 0 auto auto 0; right: var(--page-pad); left: var(--page-pad); height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--page-pad); z-index: 90; background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0)); backdrop-filter: blur(4px); }
+.brand :global(img) { height: 20px; width: auto; }
+.brandTitle {
+  position: fixed;
+  top: calc(var(--page-pad) + var(--corner-pad) + env(safe-area-inset-top)); /* respect notches */
+  left: calc(var(--page-pad) + env(safe-area-inset-left)); /* align with global page padding */
+  z-index: 120; /* above mobileMenu (100) so brand overlays menu */
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  user-select: none;
+  text-decoration: none; /* anchor reset */
+  cursor: pointer;
+  transition: opacity 240ms ease;
+  opacity: var(--heroFade, 1);
+}
+/* Hamburger button (hidden on desktop; shown on small screens) */
+.hamburgerBtn {
+  /* Tunable variables for pixel matching */
+  --hb-w: 28px;           /* line length */
+  --hb-h: 1px;            /* line thickness */
+  --hb-gap: 2.5px;        /* vertical offset from center when closed */
+  --hb-dur: 320ms;       /* animation duration */
+  --hb-ease: cubic-bezier(0.19, 1, 0.22, 1); /* easeOutExpo-like */
+  position: fixed;
+  top: calc(var(--page-pad) + var(--corner-pad) + env(safe-area-inset-top)); /* respect notches */
+  right: calc(var(--page-pad) + env(safe-area-inset-right));
+  z-index: 121; /* above mobileMenu (100) so original X overlays menu */
+  width: 40px;
+  height: 40px;
+  display: none; /* default hidden; show via media query */
+  place-items: center;
+  background: transparent; /* no visible box */
+  border: 0;               /* remove border */
+  border-radius: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: inherit;
+}
+.hamburgerBtn:focus { outline: none; }
+.hamburgerBtn:focus-visible { outline: none; }
+.hamburgerIcon {
+  position: relative;
+  display: block;
+  width: var(--hb-w);
+  height: calc(var(--hb-gap) * 2 + var(--hb-h)); /* minimal box to hold both lines */
+  /* Align to top of 40px button so its top edge equals var(--page-pad) */
+  align-self: start;
+}
+.hamburgerLine {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: block;
+  width: var(--hb-w);
+  height: var(--hb-h);
+  background: #fff;         /* solid white lines */
+  border-radius: 1px;       /* subtle round ends */
+  transform-origin: center;
+  transition: transform var(--hb-dur) var(--hb-ease), opacity 200ms ease;
+}
+/* Two-line layout (closed state): offset up/down */
+.hamburgerBtn .hamburgerLine:first-of-type { transform: translateY(calc(-50% - var(--hb-gap))); }
+.hamburgerBtn .hamburgerLine:last-of-type { transform: translateY(calc(-50% + var(--hb-gap))); }
+
+/* Open state: morph to X */
+.hamburgerOpen .hamburgerLine:first-of-type { transform: translateY(-50%) rotate(45deg); }
+.hamburgerOpen .hamburgerLine:last-of-type { transform: translateY(-50%) rotate(-45deg); }
+/* Utility: neutralize link color to inherit context (used on privacy page body) */
+.neutralLinks a { color: inherit; }
+.neutralLinks a:hover { text-decoration: underline; }
+.nav { display: flex; gap: 16px; align-items: center; }
+.nav a { color: #eaeaea; text-decoration: none; font-weight: 500; opacity: 0.9; }
+.nav a:hover { opacity: 1; }
+.btn { padding: 8px 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 999px; }
+.hero { position: relative; min-height: 100vh; overflow: hidden; z-index: 0; }
+@media (max-width: 900px) {
+  .hero { min-height: 78vh; }
+}
+@media (max-width: 600px) {
+  .hero { min-height: 72vh; }
+}
+.canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.shaderCover {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 12; /* above canvas (0), below loading overlay (15) */
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 600ms ease;
+}
+.shaderCoverReady { opacity: 0; }
+/* While loading, reveal a subtle center window to let the shader show through */
+.shaderCoverHole {
+  /* Circular aperture: shader is only visible inside this hole */
+  /* Constant aperture radius; very shallow, wide feathered edge */
+  /* Contain more: slightly smaller aperture and shorter spread */
+  --ap: clamp(130px, 14vw, 220px); /* constant size per viewport */
+  background: radial-gradient(
+    circle at center,
+    rgba(0,0,0,0.00) 0,
+    rgba(0,0,0,0.00) var(--ap),
+    rgba(0,0,0,0.10) calc(var(--ap) + 26px),
+    rgba(0,0,0,0.26) calc(var(--ap) + 60px),
+    rgba(0,0,0,0.46) calc(var(--ap) + 100px),
+    rgba(0,0,0,0.72) calc(var(--ap) + 150px),
+    rgba(0,0,0,0.94) calc(var(--ap) + 200px),
+    rgba(0,0,0,1.00) 100%
+  );
+}
+
+/* Veil that darkens the aperture during loading and fades out when shader is ready */
+.shaderVeil {
+  position: absolute;
+  inset: 0;
+  z-index: 13; /* above shaderCover (12), below loading overlay (15) */
+  pointer-events: none;
+  /* Use the same aperture radius to align perfectly with the hole */
+  --ap: clamp(130px, 14vw, 220px);
+  background: radial-gradient(
+    circle at center,
+    rgba(0,0,0,1.0) 0,
+    rgba(0,0,0,1.0) calc(var(--ap) - 2px),
+    rgba(0,0,0,0.0) calc(var(--ap) + 2px),
+    rgba(0,0,0,0.0) 100%
+  );
+  opacity: 1;
+  transition: opacity 700ms ease;
+}
+.shaderVeilReveal { opacity: 0; }
+.heroContent { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 24px; height: 100vh; display: grid; place-items: center; text-align: center; }
+@media (max-width: 900px) {
+  .heroContent { height: 78vh; }
+}
+@media (max-width: 600px) {
+  .heroContent { height: 72vh; }
+}
+.heroContent h1 { margin: 0; letter-spacing: -0.02em; font-weight: 400; }
+/* Utility: hide element during loading */
+.hideWhileLoading { opacity: 0 !important; pointer-events: none !important; }
+/* Loading overlay sits above canvas but below fixed nav/brand */
+.loadingOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;            /* robust centering across engines */
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
+  z-index: 15; /* brand (20) and sideNav (30) stay above if needed */
+  pointer-events: none; /* sphere handles itself; overlay is informational */
+}
+
+/* Keep canvas mounted but hide it during loading */
+.heroCanvasWrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* below shaderCover (12) and overlay (15) */
+}
+.canvasHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.loadingInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.loadingStack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 72px; /* reserve space so removing tagline doesn't jump layout */
+}
+/* Subtle radial shade that is clear at center and darkens towards edges,
+   so the shader is faintly visible around the loading indicator */
+.loadingShade {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* behind layers */
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(0,0,0,0.00) 0%,
+    rgba(0,0,0,0.00) 18%,
+    rgba(0,0,0,0.20) 40%,
+    rgba(0,0,0,0.45) 66%,
+    rgba(0,0,0,0.75) 100%
+  );
+}
+/* Absolute layers to keep elements in the exact same spot */
+.loadingLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+/* Group number + logo vertically but centered together */
+.loadingGroup {
+  display: grid;
+  place-items: center;
+  gap: 2px; /* tighter spacing between number and logo */
+}
+.loadingNumber {
+  /* match side-nav link size and style */
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+/* Pop-in for number */
+/* Pure dissolve in place (no movement) */
+.dissolveIn { opacity: 0; animation: dissolveIn 320ms ease forwards; }
+.dissolveOut { opacity: 1; animation: dissolveOut 320ms ease forwards; }
+/* Fater logo under the loading number, animated in sync */
+.loadingLogo { margin-top: 2px; display: inline-block; }
+.loadingLogo img {
+  height: 28px;
+  width: auto;
+  display: block;
+  opacity: 1; /* parent handles dissolve */
+  transform: none; /* no position shift */
+  filter: none; /* no blur */
+}
+/* Continuous spin for the logo image (no translation/scale) */
+.loadingLogoSpin { animation: rotate360 2.4s linear infinite; }
+/* Remove spin and movement for dissolve; logo image simply fades */
+.loadingLogoActive img { animation: none; opacity: 1; transform: none; filter: none; }
+/* Pop-in for logo container */
+.loadingLogoIn { opacity: 0; transform: translateY(8px) scale(0.96); animation: fadePopIn 460ms cubic-bezier(0.45,0,0.55,1) 40ms forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .loadingLogo img { opacity: 1; transform: none; filter: none; }
+  .loadingLogoActive img { animation: none !important; }
+  .loadingLogoSpin { animation: none !important; }
+  .dissolveIn, .dissolveOut { opacity: 1 !important; animation: none !important; }
+}
+/* Dissolve only (no transform) */
+@keyframes dissolveIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dissolveOut { from { opacity: 1; } to { opacity: 0; } }
+/* Spinner displayed under the loading number */
+.loadingLogoOnly { width: 32px; height: 32px; animation: rotate360 2.4s linear infinite; filter: drop-shadow(0 1px 4px rgba(0,0,0,0.35)); }
+/* Hide hero content until loading completes */
+.heroHidden { opacity: 0; filter: blur(6px); transform: translateY(10px); pointer-events: none; }
+.heroVisible { opacity: 1; filter: none; transform: none; pointer-events: auto; }
+.heroContent { transition: opacity 420ms ease, filter 420ms ease, transform 420ms ease; }
+
+/* Generated sentence under the logo (match loadingNumber style) */
+.loadingTagline {
+  margin-top: 8px;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.35);
+  white-space: nowrap;
+}
+
+/* When shown in a corner during loading */
+.loadingTaglineCorner {
+  position: fixed;
+  z-index: 16; /* above shader and loading overlay content */
+  pointer-events: none;
+  margin-top: 0;
+}
+.loadingTaglineBottomCenter {
+  position: fixed;
+  z-index: 16;
+  pointer-events: none;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.loadingCornerTL { top: 24px; left: 24px; }
+.loadingCornerTR { top: 24px; right: 24px; text-align: right; }
+.loadingCornerBL { bottom: 24px; left: 24px; }
+.loadingCornerBR { bottom: 24px; right: 24px; text-align: right; }
+
+/* Typewriter caret */
+@keyframes caretBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.caret {
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  margin-left: 2px;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+  animation: caretBlink 1s step-end infinite;
+  vertical-align: -1px;
+}
+
+/* Simple fade utilities for sequencing */
+.fadeIn {
+  opacity: 1;
+  transform: none;
+  transition: opacity 480ms cubic-bezier(0.45, 0, 0.55, 1), transform 480ms cubic-bezier(0.45, 0, 0.55, 1);
+}
+.fadeOut {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 480ms cubic-bezier(0.45, 0, 0.55, 1), transform 480ms cubic-bezier(0.45, 0, 0.55, 1);
+}
+/* stack heading + CTA as a group so spacing is consistent */
+.heroStack { display: inline-flex; flex-direction: column; align-items: center; gap: 30px; }
+/* Pixel-based sizes (desktop-first), responsive fallbacks */
+.heroTitle { font-size: 60px; line-height: 1.05; }
+@media (max-width: 1200px) { .heroTitle { font-size: 56px; } }
+@media (max-width: 900px)  { .heroTitle { font-size: 48px; } }
+@media (max-width: 600px)  { .heroTitle { font-size: 36px; } }
+.heroContent p { font-size: clamp(16px, 2vw, 20px); opacity: 0.85; margin: 0; }
+
+/* Reveal animations */
+@keyframes revealUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.revealUp { animation: revealUp 900ms cubic-bezier(.2,.8,.2,1) both; }
+.revealUpDelay { animation: revealUp 1100ms cubic-bezier(.2,.8,.2,1) both; animation-delay: 120ms; }
+
+/* Per-letter animation */
+@keyframes letterUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.letters { display: inline-block; }
+
+/* Manifesto section */
+.manifestoSection {
+  position: relative;
+  background: transparent; /* let main background show to avoid seams */
+  color: #bbb;
+  padding: 120px 0 80px; /* tighter bottom spacing to FAQ */
+  overflow-x: hidden; /* ensure children cannot widen the page */
+}
+.manifestoInner { max-width: 1100px; width: 100%; margin: 0 auto; overflow: hidden; padding: 0 24px; }
+.manifestoLines { display: grid; gap: 24px; width: 100%; margin: 0 auto; min-width: 0; }
+.manifestoLine {
+  --fill: 0%; /* default ensures we start unfilled */
+  display: block;
+  font-size: clamp(34px, 8.5vw, 96px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  font-weight: 400; /* regular */
+  font-family: inherit; /* use the single site font family */
+  max-width: 100%;
+  min-width: 0; /* allow grid item to shrink within viewport */
+  overflow: hidden; /* hard-stop any paint/layout overflow */
+  /* Horizontal fill via dual backgrounds controlled by --fill (prevents overflow) */
+  color: transparent;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,1)), /* filled part */
+    linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.10)); /* unfilled dimmer for strong contrast */
+  background-size: var(--fill, 0%) 100%, 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  will-change: background-size;
+  white-space: normal; /* allow browser to wrap normally */
+  overflow-wrap: anywhere; /* allow breaks inside long words to avoid overflow */
+  word-break: normal;
+  will-change: color;
+}
+/* Keep gradient active; no snap-to-white, to preserve visible wipe */
+.manifestoBold { font-weight: 700; }
+.manifestoChar {
+  display: inline; /* keep gradient continuous across characters */
+  transition: color 160ms ease;
+  will-change: color;
+}
+.manifestoKicker {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 18px;
+}
+/* FAQ section */
+.faqSection {
+  position: relative;
+  background: transparent;
+  color: #fff;
+  padding: 40px 0 72px; /* tighter top spacing from manifesto */
+}
+
+.faqInner { max-width: 1100px; width: 100%; margin: 0 auto; padding: 0 24px; }
+
+.faqGrid { display: grid; grid-template-columns: 1fr; gap: 12px 18px; align-items: start; }
+@media (min-width: 900px) { .faqGrid { grid-template-columns: 1fr 1fr; } }
+.faqItem {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  /* Intrinsic height: only grows when panel opens */
+}
+.faqHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 16px 18px;
+  cursor: pointer;
+  text-align: left;
+}
+.faqHeader:hover { background: rgba(255,255,255,0.04); }
+.faqQ { font-size: clamp(16px, 2.2vw, 20px); letter-spacing: -0.01em; font-weight: 500; }
+.faqIcon {
+  width: 22px; height: 22px; flex: 0 0 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 600;
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  line-height: 1;
+}
+.faqPanel {
+  max-height: 0;
+  opacity: 0.0;
+  overflow: hidden;
+  transition: max-height 480ms cubic-bezier(0.22,1,0.36,1), opacity 360ms ease;
+  pointer-events: none;
+}
+.faqPanelInner { padding: 0 18px 18px; color: rgba(255,255,255,0.82); line-height: 1.6; font-size: 15px; white-space: pre-line; }
+.faqItem[data-open="true"] .faqPanel { max-height: 800px; opacity: 1; pointer-events: auto; }
+/* Also drive visibility purely from aria-expanded to avoid any attribute desync */
+.faqHeader[aria-expanded="true"] + .faqPanel { max-height: 800px; opacity: 1; pointer-events: auto; }
+.faqHeader[aria-expanded="false"] + .faqPanel { max-height: 0; opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .faqPanel { transition: none !important; max-height: none !important; opacity: 1 !important; }
+}
+.letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px);
+  animation-name: letterUp;
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(.2,.8,.2,1);
+  animation-fill-mode: both;
+}
+
+/* Bottom-left scroll indicator */
+.scrollIndicator {
+  position: absolute; /* anchor inside hero */
+  left: calc(var(--page-pad) * 2);
+  bottom: max(18px, calc(var(--page-pad) * 0.6)); /* push down but keep a small padding */
+  width: 160px; /* estimated size to match reference */
+  height: 160px;
+  z-index: 10;
+  pointer-events: none; /* decorative */
+}
+.scrollSpinner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  animation: rotate360 20s linear infinite; /* spin ring + logo together */
+}
+.scrollImg {
+  width: 160px; /* match container pixel height */
+  height: 160px;
+  display: block;
+  filter: drop-shadow(0 1px 6px rgba(0,0,0,0.35));
+  transform: scale(0.42); /* tinier ring while keeping 160px container */
+  transform-origin: center;
+  position: relative;
+  z-index: 1;
+}
+.scrollCenterLogo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.35); /* slightly larger center logo */
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.35));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollIndicator { animation: none !important; }
+}
+
+/* Solid black gradient transition at the bottom of hero (no blur) */
+.heroEdge {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 8vh; /* a bit taller for stronger separation */
+  z-index: 1; /* between canvas (0) and content (2) */
+  pointer-events: none;
+  /* strong shade to pure black */
+  background: linear-gradient(to bottom,
+    rgba(13,13,13,0.00) 0%,
+    rgba(13,13,13,0.22) 18%,
+    rgba(13,13,13,0.55) 45%,
+    rgba(13,13,13,0.82) 72%,
+    rgba(13,13,13,1.00) 100%
+  );
+}
+.cursorBubble {
+  position: fixed;
+  top: 0; left: 0;
+  width: 10px; height: 10px;
+  margin: -5px 0 0 -5px; /* center on pointer */
+  border-radius: 50%;
+  background: #fff;
+  z-index: 50;
+  pointer-events: none;
+  --x: -9999px; --y: -9999px; --s: 1;
+  transform: translate3d(var(--x), var(--y), 0) scale(var(--s));
+  will-change: transform;
+  transition: transform 160ms cubic-bezier(.2,.8,.2,1);
+}
+.clicked { --s: 2.2; }
+
+/* Verb swap animation */
+.verbWrap {
+  display: inline-grid; /* grid to stack sizer + layers */
+  position: relative;
+  height: 1em; /* stable baseline */
+  line-height: 1em;
+  vertical-align: baseline;
+  margin-right: 0; /* avoid unintended spacing */
+  white-space: nowrap; /* never wrap the verb */
+  font-variant-ligatures: none;
+  transform: translateZ(0); /* stabilize AA */
+  overflow: visible; /* allow blur to render beyond glyphs */
+  will-change: width;
+}
+.verbSizer {
+  opacity: 0; /* keep in flow to control width */
+  white-space: nowrap;
+  line-height: 1em;
+  pointer-events: none;
+  grid-area: 1 / 1; /* stack */
+  font-kerning: inherit;
+  font-feature-settings: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  display: inline-block;
+  overflow: visible;
+}
+.lettersSwap {
+  grid-area: 1 / 1; /* stack over sizer */
+  position: relative;
+  display: inline-flex;
+  white-space: nowrap;
+  pointer-events: none;
+  font-kerning: inherit;
+  font-feature-settings: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  font-variant-ligatures: none;
+  will-change: transform, opacity;
+  overflow: visible;
+  /* Expand the paint area so blur isn't clipped around the word */
+  --bleed: 16px;
+  clip-path: inset(calc(-1 * var(--bleed)) calc(-1 * var(--bleed)) calc(-1 * var(--bleed)) calc(-1 * var(--bleed)) round 0);
+}
+.char {
+  display: inline-block;
+  line-height: 1em;
+  will-change: transform, opacity, filter;
+  overflow: visible;
+}
+
+/* Fixed invisible spacer to ensure separation from next word */
+.verbSpacer {
+  display: inline-block;
+  width: 0.4em;
+  height: 1em;
+  pointer-events: none;
+}
+
+/* Dissolve directions */
+.lettersOut .char {
+  animation: charOut 900ms cubic-bezier(0.45, 0, 0.55, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.lettersIn .char {
+  opacity: 0;
+  transform: translateY(14px) translateX(var(--rx, 0px));
+  filter: blur(8px);
+}
+.lettersIn.lettersInActive .char {
+  animation: charIn 900ms cubic-bezier(0.45, 0, 0.55, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* No layer masks; stability-first setup */
+
+@keyframes charOut {
+  0% { opacity: 1; transform: translateY(0) translateX(0); filter: blur(0px); }
+  100% { opacity: 0; transform: translateY(-14px) translateX(var(--rx, 0px)); filter: blur(8px); }
+}
+@keyframes charIn {
+  0% { opacity: 0; transform: translateY(14px) translateX(var(--rx, 0px)); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0) translateX(0); filter: blur(0px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lettersSwap .char { animation: none !important; transition: none !important; filter: none !important; transform: none !important; }
+}
+.sideNav {
+  position: fixed;
+  top: calc(var(--page-pad) + var(--corner-pad) + env(safe-area-inset-top)); /* respect notches */
+  right: calc(var(--page-pad) + env(safe-area-inset-right)); /* align with global page padding */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  z-index: 30;
+  pointer-events: auto;
+  transition: opacity 240ms ease;
+  opacity: var(--heroFade, 1);
+}
+.sideNav a {
+  font-size: 9px; /* requested height */
+  line-height: 1; /* tight height to match 9px */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.72);
+  font-family: 'Roobert', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  text-decoration: none;
+  position: relative;
+  transition: color 200ms ease, transform 200ms ease;
+  text-align: right;
+  padding: 4px 0; /* vertical rhythm for hit area */
+}
+.sideNav a::before {
+  content: '→';
+  position: absolute;
+  right: 100%;
+  margin-right: 6px;
+  color: rgba(255,255,255,0.5);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 200ms ease, transform 200ms ease, color 200ms ease;
+}
+.sideNav a:hover {
+  color: #fff;
+}
+.sideNav a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+  color: #fff;
+}
+.msBadge {
+  position: fixed;
+  top: calc(var(--page-pad) * 1.5 + 140px); /* below side nav */
+  right: calc(var(--page-pad) * 2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+  color: rgba(255,255,255,0.72);
+  font-size: 9px; /* match side nav */
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  pointer-events: auto;
+}
+.msBadgeLogo { height: 14px; width: auto; opacity: 0.85; filter: grayscale(1) brightness(1.2); }
+.msBadge:hover { color: #ffffff; }
+.msBadge:hover .msBadgeLogo { opacity: 1; filter: grayscale(0) brightness(1); }
+.section { padding: 96px 24px; max-width: 1200px; margin: 0 auto; }
+.placeholder { height: 200px; border: 1px dashed rgba(255,255,255,0.3); border-radius: 12px; display: grid; place-items: center; opacity: 0.7; }
+
+/* Partners section (after hero) */
+.partnersSection {
+  position: relative;
+  z-index: 10; /* ensure it sits above the hero shader when overlapping */
+  min-height: 90vh;
+  overflow: hidden;
+  /* Pull the section slightly over the hero so the gradient overlaps the shader */
+  margin-top: -32vh;
+  padding-top: 32vh;
+  background: transparent; /* allow hero to be visible where gradient is transparent */
+  color: #fff; /* ensure text is visible on black */
+}
+.partnersCompact {
+  /* Compact version used after manifesto (no overlap) */
+  margin-top: 0 !important;      /* cancel base -32vh */
+  padding-top: 0 !important;     /* cancel base 32vh */
+  min-height: 0 !important;      /* cancel base 90vh */
+  background: transparent; /* avoid color separation; main handles bg */
+  overflow: visible !important;  /* avoid clipping */
+}
+/* When partners (compact) directly follows manifesto, overlap to remove extra gap */
+.manifestoSection + .partnersCompact { margin-top: 0; }
+.partnersSectionWhite {
+  /* compact, white bar variant placed before manifesto */
+  margin-top: 0;
+  padding-top: 0;
+  min-height: auto;
+  background: #ffffff;
+  color: #0d0d0d;
+}
+.partnersSectionWhite::before,
+.partnersSectionWhite::after,
+.partnersSectionWhite .partnersFade {
+  /* disable gradient overlays for white variant */
+  display: none !important;
+  content: none !important;
+}
+.partnersSection::before {
+  /* Gradient layer that overlaps the hero; transparent at the very top, black towards bottom */
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 64vh; /* taller overlay to cover the overlap area */
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(13,13,13,0.00) 0%,    /* reveal shader at very top */
+    rgba(13,13,13,0.45) 26%,   /* mid dark sooner */
+    rgba(13,13,13,0.95) 40%,   /* nearly black before fill begins */
+    rgba(13,13,13,1.00) 50%,   /* fully black past the edge */
+    rgba(13,13,13,1.00) 100%   /* fully black at bottom of overlay */
+  );
+  z-index: 1; /* sits above black fill */
+}
+.partnersSection::after {
+  /* Black fill starts a bit lower so the gradient's transparent top reveals the hero */
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0; top: 32vh; /* start fill below top, matching new overlap */
+  background: transparent; /* let main background show */
+  z-index: 0;
+}
+.partnersFade {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 64vh; /* match ::before */
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(13,13,13,0.00) 0%,
+    rgba(13,13,13,0.45) 26%,
+    rgba(13,13,13,0.95) 40%,
+    rgba(13,13,13,1.00) 50%,
+    rgba(13,13,13,1.00) 100%
+  );
+  z-index: 1; /* above black fill, below content */
+}
+.partnersContent {
+  position: relative;
+  z-index: 2; /* above gradient overlay */
+  max-width: 1100px;
+  margin: 0 auto;
+  height: 90vh;
+  display: grid;
+  place-items: center;
+  padding: 0 24px;
+  text-align: center;
+}
+.partnersCompact .partnersContent {
+  /* center content with natural height */
+  height: auto !important;       /* cancel base 90vh */
+  min-height: 0 !important;
+  padding: 24px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.partnersSectionWhite .partnersContent {
+  height: auto;
+  min-height: 140px;
+  padding: 26px 24px;
+}
+.partnersKicker {
+  /* Match top-right side nav link style exactly */
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* Adapt color as the page background fades from black->white */
+  color: color-mix(
+    in oklab,
+    rgba(255,255,255,0.80) calc(100% - (var(--bgw, 0) * 100%)),
+    rgba(13,13,13,0.88) calc(var(--bgw, 0) * 100%)
+  );
+  font-weight: 300;
+  /* Use Space Grotesk loaded via next/font (see app/layout.tsx) */
+  font-family: var(--font-sans), 'Space Grotesk', 'Grotesk', 'Roobert', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin-bottom: 24px;
+}
+.partnerLogos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(28px, 6vw, 80px);
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.partnerLogo {
+  /* Harmonized size across all partner logos */
+  height: clamp(18px, 3.8vw, 36px);
+  width: auto;
+  object-fit: contain;
+  /* Invert as a step function to avoid mid-gray during the fade */
+  filter: grayscale(1) brightness(1.02) contrast(0.92)
+          invert(clamp(0, (var(--bgw, 0) - 0.5) * 9999, 1));
+  opacity: 0.85;
+  /* Do not animate filter to prevent flicker while --bgw updates */
+  transition: opacity 400ms ease, transform 400ms ease;
+  pointer-events: none; /* not interactive */
+  cursor: default;
+}
+.partnerLogoMs { height: clamp(14px, 2.8vw, 24px); }
+.partnerLogoMsMask {
+  display: inline-block;
+  height: clamp(14px, 2.8vw, 24px);
+  aspect-ratio: 603.9 / 129; /* from SVG viewBox */
+  width: auto;
+  /* Use SVG as a mask to paint a single flat color */
+  -webkit-mask: url('../cdnlogo.com_microsoft.svg') no-repeat center / contain;
+  mask: url('../cdnlogo.com_microsoft.svg') no-repeat center / contain;
+  /* Paint pure white then apply the exact same filter pipeline as other logos */
+  background-color: #fff;
+  filter: grayscale(1) brightness(1.02) contrast(0.92)
+          invert(var(--inv, 0));
+  opacity: 0.85;
+  transition: opacity 400ms ease, transform 400ms ease;
+  pointer-events: none;
+}
+.partnerLogoNvidia { height: clamp(56px, 7vw, 72px); width: auto; object-fit: contain; }
+/* (duplicate MS rule removed; consolidated above) */
+/* Disable hover effects for partner logos */
+.partnerLogo:hover { transform: none; opacity: 0.85; filter: grayscale(1) brightness(1.05) contrast(0.9); }
+
+/* Fade-in on scroll utilities */
+.partnersReveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 600ms cubic-bezier(.2,.8,.2,1), transform 600ms cubic-bezier(.2,.8,.2,1);
+  will-change: opacity, transform;
+}
+.isVisible { opacity: 1; transform: none; }
+
+/* Staggered fade-in for logos when container becomes visible */
+.partnerLogos .partnerLogo, .partnerLogos .partnerLogoMsMask { opacity: 0; transform: translateY(8px); }
+.logosVisible.partnerLogos .partnerLogo, .logosVisible.partnerLogos .partnerLogoMsMask { opacity: 0.85; transform: none; }
+/* Stagger: account for the masked element as 1st child */
+.logosVisible.partnerLogos > :nth-child(1) { transition-delay: 40ms; }
+.logosVisible.partnerLogos > :nth-child(2) { transition-delay: 120ms; }
+.logosVisible.partnerLogos > :nth-child(3) { transition-delay: 200ms; }
+.logosVisible.partnerLogos > :nth-child(4) { transition-delay: 280ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .partnersReveal,
+  .partnerLogos .partnerLogo,
+  .partnerLogos .partnerLogoMsMask {
+    transition: none !important; transform: none !important; opacity: 1 !important;
+  }
+}
+.partnersList {
+  font-size: clamp(22px, 4.2vw, 44px);
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  margin: 0 auto 28px;
+}
+.partnersDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.9;
+  margin: 16px auto 0;
+}
+.partnersCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  color: #0d0d0d;
+  background: #99C0FF; /* brand highlight */
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 180ms ease, filter 180ms ease;
+}
+.partnersCta:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.partnersArrow {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.9);
+  color: #0d0d0d;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* Light variant for hero usage */
+.heroCta {
+  background: #fff !important;
+  color: #0d0d0d !important;
+  margin-top: 0; /* spacing handled by .heroStack gap */
+}
+
+/* Footer */
+.footerSection {
+  background: transparent; /* use main background for seamless fade */
+  color: #0d0d0d; /* dark text */
+  padding: 100px 0 80px; /* more breathing room */
+}
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.contactKicker { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.6; margin: 0 0 10px; }
+.footerHeadline {
+  margin: 0 0 32px 0;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  font-size: clamp(36px, 7.5vw, 96px);
+}
+.footerLead { display: block; }
+.footerEmail {
+  color: #0d0d0d;
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(13,13,13,0.35);
+}
+.footerEmail:hover { border-bottom-color: #0d0d0d; }
+.footerRow { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 32px; }
+.contactGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 36px; align-items: start; }
+.contactLeft { display: flex; flex-direction: column; gap: 12px; }
+.contactRight { display: grid; grid-template-rows: auto 1fr; gap: 12px; }
+.contactDesc { color: rgba(13,13,13,0.75); font-size: 16px; line-height: 1.5; }
+.contactFieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.contactInput, .contactTextarea {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid rgba(13,13,13,0.55);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 16px;
+  color: #0d0d0d;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.contactInput:focus { border-color: #0d0d0d; box-shadow: 0 0 0 3px rgba(13,13,13,0.08); }
+.contactTextarea {
+  border-radius: 20px;
+  min-height: 140px;
+  resize: vertical;
+  padding: 14px 18px;
+}
+.contactInput::placeholder { color: rgba(13,13,13,0.5); }
+.contactTextarea::placeholder { color: rgba(13,13,13,0.5); }
+.contactActions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; }
+.contactSubmit {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #0d0d0d; color: #fff; border: none; border-radius: 999px;
+  padding: 14px 26px; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;
+  transition: transform 160ms ease, filter 160ms ease, background 160ms ease;
+}
+.contactSubmit:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.backToTop { display: inline-flex; align-items: center; gap: 10px; color: #0d0d0d; text-decoration: none; font-weight: 500; }
+.backToTop:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .contactGrid { grid-template-columns: 1fr; }
+  .contactFieldRow { grid-template-columns: 1fr; }
+  .contactActions { flex-direction: column; align-items: stretch; gap: 10px; }
+}
+.footerSocials { display: flex; gap: 16px; align-items: center; }
+.footerSocials a {
+  color: #0d0d0d;
+  text-decoration: none;
+  font-weight: 500;
+  border: none; /* remove ring stroke */
+  width: 36px; /* fixed size for consistent framing */
+  height: 36px;
+  padding: 0; /* icons centered in square */
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 0; /* tighten around icon */
+  display: grid;
+  place-items: center;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.iconBtn svg { display: block; width: 20px; height: 20px; }
+.footerSocials a:hover { transform: translateY(-1px); color: #0d0d0d; }
+.footerCopy { opacity: 0.75; font-size: 12px; color: #0d0d0d; text-align: center; margin-top: 6px; }
+
+@media (max-width: 700px) {
+  .footerRow { gap: 14px; }
+}
+
+/* Roobert webfont (place files at public/fonts/). Falls back if missing. */
+@font-face {
+  font-family: "Roobert";
+  src: url("/fonts/Roobert-Regular.woff2") format("woff2"),
+       url("/fonts/Roobert-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Mobile menu overlay and nav (mounted while opening/closing) */
+/* Register a custom property to synchronize child motion with the panel */
+@property --menu-t {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: true;
+}
+@keyframes mobileMenuInSmooth {
+  0% { --menu-t: 0; transform: translateX(-100%); }
+  100% { --menu-t: 1; transform: translateX(0); }
+}
+@keyframes mobileMenuOutSmooth {
+  0% { --menu-t: 1; transform: translateX(0); }
+  100% { --menu-t: 0; transform: translateX(-100%); }
+}
+.mobileMenu {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above header & hamburger, above bubble */
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(4px);
+  display: grid;
+  /* Top spacer, flexible nav area, contact row slightly above bottom */
+  grid-template-rows: 12vh 1fr auto;
+  /* Keep children visible when animation class is removed */
+  --menu-t: 1;
+  opacity: 1;
+  transform: translateX(0); /* safe default: onscreen */
+  visibility: visible;      /* ensure visible */
+  justify-items: start; /* left-align children horizontally */
+}
+/* Opening/closing state modifiers */
+.mobileMenuEntering { animation: mobileMenuInSmooth 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.mobileMenuClosing { animation: mobileMenuOutSmooth 640ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.mobileMenuHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 20px 18px 8px;
+  position: relative; /* ensure z-index applies within menu stacking context */
+  z-index: 60; /* above any decorative overlays like cursor bubble (50) */
+  color: #fff;
+}
+.mobileBrand { display: flex; align-items: baseline; gap: 8px; font-weight: 700; letter-spacing: -0.02em; }
+.mobileBrandMain { font-size: 20px; opacity: 0.95; }
+.mobileBrandSub { font-size: 14px; opacity: 0.7; font-weight: 500; }
+.mobileClose {
+  position: relative;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  background: transparent; border: 0; color: #fff; cursor: pointer;
+}
+.closeLine {
+  position: absolute;
+  width: 20px; height: 1px; background: #fff; border-radius: 1px;
+  transform-origin: center;
+}
+.closeLine:first-of-type { transform: rotate(45deg); }
+.closeLine:last-of-type { transform: rotate(-45deg); }
+
+.langRow {
+  display: flex; gap: 18px; padding: 8px 22px 0; color: rgba(255,255,255,0.6);
+}
+.langItem { background: transparent; border: 0; color: inherit; font-size: 14px; letter-spacing: 0.02em; cursor: default; padding: 6px 0; }
+.langActive { color: #fff; font-weight: 600; }
+.mobileNav {
+  align-self: center;
+  justify-self: start;
+  text-align: left;
+  padding: 0 22px;
+  display: grid;
+  gap: clamp(14px, 3.5vh, 28px);
+  grid-row: 2; /* lives in flexible middle area */
+  position: relative;
+  z-index: 60;
+}
+.mobileNav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-size: clamp(32px, 8.5vw, 56px);
+  /* Prefer Roobert, fall back gracefully */
+  font-family: "Roobert", "Space Grotesk", "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.08;
+  /* Visible by default */
+  opacity: 1;
+  transform: none;
+  /* per-link index for subtle positional stagger */
+  --i: 0;
+}
+/* indexes for staggered feel (pure CSS, positional offset only) */
+.mobileNav a:nth-child(2) { --i: 1; }
+.mobileNav a:nth-child(3) { --i: 2; }
+/* During enter/close, bind to parent's --menu-t for dragged effect */
+.mobileMenuEntering .mobileNav a,
+.mobileMenuClosing .mobileNav a {
+  opacity: calc(var(--menu-t, 1) - (var(--i) * 0.04));
+  transform: translateX(calc((1 - var(--menu-t, 1)) * (-28px - var(--i) * 6px)));
+}
+/* No separate animations; motion is driven by parent animation through --menu-t */
+.mobileNav a::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255,255,255,0.55);
+  width: 0;
+  transition: width 280ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+.mobileNav a:hover::after { width: 100%; }
+
+.mobileContact {
+  align-self: start; /* keep above absolute bottom */
+  justify-self: start;
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 22px 22px;
+  color: #fff;
+  /* Visible by default */
+  opacity: 1;
+  transform: none;
+  grid-row: 3; /* third row: sits above bottom edge */
+  position: relative;
+  z-index: 60;
+}
+
+/* When mobile menu is open, hide interactive/decorative overlays inside it */
+.mobileMenu .cursorBubble { display: none !important; }
+.mobileMenu .scrollIndicator { display: none !important; }
+.mobileMenuEntering .mobileContact,
+.mobileMenuClosing .mobileContact {
+  opacity: calc(var(--menu-t, 1));
+  transform: translateX(calc((1 - var(--menu-t, 1)) * -18px));
+}
+
+/* Fallback for browsers that don't animate custom properties in keyframes */
+@supports not (property: --menu-t) {
+  .mobileMenuEntering .mobileNav a,
+  .mobileMenuEntering .mobileContact {
+    opacity: 0;
+    transform: translateX(-28px);
+    animation: fallbackChildIn 640ms cubic-bezier(0.22, 0.61, 0.36, 1) 60ms forwards;
+  }
+  .mobileMenuClosing .mobileNav a,
+  .mobileMenuClosing .mobileContact {
+    opacity: 1;
+    transform: translateX(0);
+    animation: fallbackChildOut 480ms cubic-bezier(0.22, 0.61, 0.36, 1) 0ms forwards;
+  }
+  @keyframes fallbackChildIn {
+    0% { opacity: 0; transform: translateX(-28px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fallbackChildOut {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(-18px); }
+  }
+}
+
+/* Reduced motion: skip panel animation and show instantly */
+@media (prefers-reduced-motion: reduce) {
+  .mobileMenuEntering,
+  .mobileMenuClosing { animation-duration: 1ms !important; }
+}
+.mobileContact, .mobileContact * { font-family: "Roobert", "Space Grotesk", "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+.contactArrow { opacity: 0.8; font-size: 18px; transform: translateY(-1px); }
+.contactEmail {
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  padding-bottom: 3px;
+  font-family: "Roobert", "Space Grotesk", "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+}
+
+/* Responsive behavior for small screens */
+@media (max-width: 900px) {
+  .sideNav { display: none; }
+  .hamburgerBtn { display: grid; }
+  /* Center the scroll indicator at bottom for mobile */
+  .scrollIndicator {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

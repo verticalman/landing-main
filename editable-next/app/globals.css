@@ -1,0 +1,15 @@
+/* Prevent unexpected horizontal scroll from any section */
+html, body { overflow-x: hidden; }
+/* Smooth scrolling for in-page anchors */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:'Roobert',-apple-system,system-ui,'Segoe UI',Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff;background:#0d0d0d}
+
+/* Optional: self-host Roobert by adding font files to editable-next/public/fonts */
+@font-face{font-family:'Roobert';src:url('/fonts/Roobert-Regular.woff2') format('woff2'),url('/fonts/Roobert-Regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Roobert';src:url('/fonts/Roobert-Medium.woff2') format('woff2'),url('/fonts/Roobert-Medium.woff') format('woff');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Roobert';src:url('/fonts/Roobert-Bold.woff2') format('woff2'),url('/fonts/Roobert-Bold.woff') format('woff');font-weight:700;font-style:normal;font-display:swap}

@@ -1,0 +1,35 @@
+.pickerRoot { display: inline-flex; align-items: center; gap: 6px; position: relative; }
+/* When trigger is hidden, expand root to cover the input row so menu can anchor to it */
+.rootOverlay { position: relative; display: block; width: 100%; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 999px; font-size: 12px; line-height: 1;
+  background: #0f1318; color: #e6edf3; border: 1px solid rgba(255,255,255,0.10);
+  cursor: default; user-select: none;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.chev { opacity: 0.6; font-size: 10px; }
+.tinyNote { color: #9aa4af; font-size: 11px; }
+
+.menu { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; padding: 10px; border-radius: 12px;
+  background: #0c1015; border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.menuList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 220px; }
+.menuItem { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1;
+  min-height: 36px; background: #151a20; color: #e6edf3; border: 1px solid rgba(255,255,255,0.10); cursor: pointer; }
+.menuItem:hover { border-color: rgba(255,255,255,0.22); }
+
+/* Colors (Notion-inspired subtle) */
+/* Keep color classes defined for potential future use, but menu uses monochrome styling */
+.colArchitecture { background: rgba(100, 181, 246, 0.16); }
+.colDesign { background: rgba(236, 64, 122, 0.16); }
+.colRetail { background: rgba(255, 193, 7, 0.16); }
+.colEngineering { background: rgba(76, 175, 80, 0.16); }
+.colOther { background: rgba(158, 158, 158, 0.16); }
+
+/* Dot default (monochrome) */
+.dotArchitecture { background: #9aa4af; }
+.dotDesign { background: #9aa4af; }
+.dotRetail { background: #9aa4af; }
+.dotEngineering { background: #9aa4af; }
+.dotOther { background: #9aa4af; }
