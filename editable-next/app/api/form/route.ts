@@ -11,13 +11,28 @@ function getEnv(name: string): string {
 }
 
 function normalizePrivateKey(key: string) {
-  // Support escaped newlines from .env file
+  // Support escaped newlines from .env/App Settings
   return key.replace(/\\n/g, '\n');
+}
+
+function getServiceAccountKey(): string {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+  const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64 || '';
+  let key = raw ? normalizePrivateKey(raw) : '';
+  if (!key && b64) {
+    try {
+      key = Buffer.from(b64, 'base64').toString('utf8');
+    } catch (e) {
+      console.error('[form endpoint] failed to decode BASE64 private key');
+    }
+  }
+  if (!key) throw new Error('Missing env: GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY or GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64');
+  return key;
 }
 
 async function getSheetsClient() {
   const clientEmail = getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL');
-  const privateKey = normalizePrivateKey(getEnv('GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY'));
+  const privateKey = getServiceAccountKey();
 
   const auth = new google.auth.JWT({
     email: clientEmail,
@@ -49,7 +64,8 @@ export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
-      return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 415 });
+      // Attempt to parse anyway, but warn. Some clients omit header.
+      console.warn('[form endpoint] non-json content-type:', contentType);
     }
 
     const payload = await req.json().catch(() => null);
@@ -63,15 +79,31 @@ export async function POST(req: NextRequest) {
     const spreadsheetId = getEnv('GOOGLE_SHEETS_SPREADSHEET_ID');
     const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME || 'FormResponses';
 
-    const sheets = await getSheetsClient();
+    let sheets;
+    try {
+      sheets = await getSheetsClient();
+    } catch (e: any) {
+      console.error('[form endpoint] auth/setup error:', e?.message || e);
+      throw e;
+    }
 
     // 1) Read header row (A1:1)
-    const headerResp = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `${sheetName}!1:1`,
-      valueRenderOption: 'UNFORMATTED_VALUE',
-    });
-    const headerRow = (headerResp.data.values?.[0] || []) as string[];
+    let headerRow: string[] = [];
+    try {
+      const headerResp = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `${sheetName}!1:1`,
+        valueRenderOption: 'UNFORMATTED_VALUE',
+      });
+      headerRow = (headerResp.data.values?.[0] || []) as string[];
+    } catch (e: any) {
+      console.error('[form endpoint] header fetch error:', e?.response?.data || e?.message || e);
+      throw new Error('Failed to read sheet header. Check spreadsheet ID, sheet name, and permissions.');
+    }
+    if (!headerRow.length) {
+      console.error('[form endpoint] empty header row for sheet:', sheetName);
+      throw new Error(`Sheet "${sheetName}" has no header row (row 1).`);
+    }
 
     // 2) Build row aligned strictly to existing header (do not modify header)
     // Map common footer fields to the target schema used in your sheet
@@ -96,13 +128,18 @@ export async function POST(req: NextRequest) {
     const row = headerRow.map((h) => mapping[h] ?? '');
 
     // 3) Append
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${sheetName}!A:A`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: { values: [row] },
-    });
+    try {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${sheetName}!A:A`,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: { values: [row] },
+      });
+    } catch (e: any) {
+      console.error('[form endpoint] append error:', e?.response?.data || e?.message || e);
+      throw new Error('Failed to append to sheet. Verify header names match and permissions are correct.');
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
