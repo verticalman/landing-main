@@ -165,6 +165,7 @@ export default function Home() {
   const frontierElRef = useRef<HTMLElement | null>(null);
   const fillMaxMapRef = useRef<WeakMap<HTMLElement, number>>(new WeakMap());
   const smoothFillMapRef = useRef<WeakMap<HTMLElement, number>>(new WeakMap());
+  const lockDownRef = useRef<WeakMap<HTMLElement, boolean>>(new WeakMap());
 
   // Shared smooth-scroll handler used by sideNav links
   const onNavClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, id: string) => {
@@ -599,20 +600,19 @@ export default function Home() {
     };
     // Determine current scroll position across our scrollers
     const scrollers = getScrollParents(manifestoRef.current);
-    // Choose a primary scroller for direction detection (prefer nearest scrollable ancestor; fallback to document.scrollingElement or window)
-    const primaryScroller = ((): Window | HTMLElement => {
-      const firstElem = scrollers.find((s) => (s as HTMLElement).scrollTop != null) as HTMLElement | undefined;
-      return firstElem || window;
-    })();
-    const getPrimaryScroll = () => {
-      if ((primaryScroller as HTMLElement).scrollTop != null) return (primaryScroller as HTMLElement).scrollTop || 0;
-      return window.scrollY || 0;
-    };
-    let lastPos = getPrimaryScroll();
+    // Use window vertical scroll for robust direction detection across browsers
+    const getPrimaryScroll = () => (window.scrollY ?? window.pageYOffset ?? 0);
+    let lastY = getPrimaryScroll();
+    let dirAccum = 0;
+    // Recent input-based direction sampling (wheel/touch), with timestamp
+    let inputDir: 'down' | 'up' = 'down';
+    let inputDirTS = 0;
+    let lastTouchY: number | null = null;
     let lastDir: 'down' | 'up' = 'down';
-    const DIR_EPS = 2; // px threshold to switch direction to avoid jitter
+    const DIR_EPS = 1; // px threshold to switch direction to avoid jitter (smaller to detect light up-scroll)
     const FULL_LOCK = 0.98;   // mark as filled when reaching this
     const RELEASE_AT = 0.08;  // when frontier drops below this, move frontier upward
+    const DEBUG_MANIFESTO = false; // set true to log direction and per-line values
 
     function updateManifestoActive() {
       const root = manifestoRef.current;
@@ -621,12 +621,36 @@ export default function Home() {
       if (!lines.length) return;
       // Use viewport center and a per-line radius for consistent feel across sizes
       const viewportCenter = window.innerHeight * 0.5;
-      const curPos = getPrimaryScroll();
-      const delta = curPos - lastPos;
-      const goingDown = delta > DIR_EPS ? true : delta < -DIR_EPS ? false : lastDir === 'down';
+      const curY = getPrimaryScroll();
+      const dY = curY - lastY;
+      const prevDir: 'down' | 'up' = lastDir;
+
+      // Initial direction guess from instantaneous delta with epsilon
+      let goingDown = dY > DIR_EPS ? true : dY < -DIR_EPS ? false : lastDir === 'down';
+
+      // Direction hysteresis: require cumulative movement to flip
+      const sgn = dY > 0 ? 1 : dY < 0 ? -1 : 0;
+      const FLIP_THRESHOLD = 6; // px cumulative to flip direction (smaller to catch light gestures)
+      dirAccum += sgn * Math.abs(dY);
+      if (lastDir === 'down' && dirAccum < -FLIP_THRESHOLD) { goingDown = false; dirAccum = 0; }
+      else if (lastDir === 'up' && dirAccum > FLIP_THRESHOLD) { goingDown = true; dirAccum = 0; }
+
+      // Prefer very recent input-derived direction (wheel/touch) to disambiguate tiny deltas
+      const nowTS = performance.now();
+      if (nowTS - inputDirTS < 180) {
+        goingDown = (inputDir === 'down');
+        dirAccum = 0;
+      }
+
       lastDir = goingDown ? 'down' : 'up';
+      const flippedToUp = prevDir === 'down' && !goingDown;
+
+            // Process every frame; monotonic logic below prevents unfill on up-scroll
+
       const fillMax = fillMaxMapRef.current;
       const smoothMap = smoothFillMapRef.current;
+      // Disable lock semantics to allow reversible behavior purely from proximity
+      const lockDown = { get: () => false, set: () => {}, delete: () => {} } as any;
       // Precompute geometry
       const geom = lines.map((el) => {
         const r = el.getBoundingClientRect();
@@ -636,40 +660,95 @@ export default function Home() {
       let closest = geom[0];
       for (const g of geom) if (Math.abs(g.center - viewportCenter) < Math.abs(closest.center - viewportCenter)) closest = g;
 
-      // If scrolling up: do not change any fills; keep them at their current maximums
-      if (!goingDown) { lastPos = curPos; return; }
+      // Allow updates in both directions (down: fill, up: unfill)
 
-      // Evaluate fills (downward only)
+      // Evaluate fills (reversible, single anchored left — down fills, up unfills)
       let needsEase = false;
       for (const g of geom) {
         const d = Math.abs(g.center - viewportCenter);
-        const radius = Math.max(g.h * 0.8, 110);
-        let t = 1 - d / radius; if (t < 0) t = 0; if (t > 1) t = 1;
-        const prevMax = fillMax.get(g.el) ?? 0;
-        // Keep animation, but ensure we eventually fill to 100%.
-        // When the line is close enough to the viewport center, snap target to 1.
-        let desired = Math.max(prevMax, t);
-        if (t >= 0.96) desired = 1;
-        fillMax.set(g.el, desired);
-        // Smoothly approach the desired value
+        const radius = Math.max(g.h * 0.8, 80);
+        let t = 1 - d / radius;
+        if (t < 0) t = 0; else if (t > 1) t = 1;
+
         const prevSmooth = smoothMap.get(g.el) ?? 0;
-        // Slightly faster easing when we're snapping to 1 to finish the line cleanly
-        const k = desired === 1 ? 0.45 : 0.25; // smoothing factor per update
-        let smoothed = prevSmooth + (desired - prevSmooth) * k;
-        if (smoothed < prevSmooth) smoothed = prevSmooth; // ensure non-decreasing
-        if (desired - smoothed > 0.004) needsEase = true;
+        const prevMaxRaw = fillMax.get(g.el) ?? 0;
+        const prevMax = Math.max(prevMaxRaw, prevSmooth);
+
+        // Monotonic left-to-right fill: never decrease per line
+        let desired = Math.max(prevMax, t);
+        // Finish aggressively near center regardless of direction (monotonicity preserves unidirectional behavior)
+        if (t >= 0.90 || prevMax >= 0.96) desired = 1;
+
+        // Snap instantly to full when desired reaches 1 to avoid partial fills
+        let smoothed: number;
+        if (desired === 1) {
+          smoothed = 1;
+        } else {
+          // Ease towards desired; ensure non-decreasing smoothing
+          const k = 0.36;
+          smoothed = prevSmooth + (desired - prevSmooth) * k;
+          if (smoothed < prevSmooth) smoothed = prevSmooth;
+        }
+
+        if (desired - smoothed > 0.0008) needsEase = true;
+
+        // Persist state
         smoothMap.set(g.el, smoothed);
-        const pct = `${(smoothed * 100).toFixed(1)}%`;
-        g.el.style.setProperty('--fill', pct);
-        g.el.style.backgroundSize = `${pct} 100%, 100% 100%`;
-        g.el.classList.toggle('active', smoothed >= 0.995);
+        fillMax.set(g.el, Math.max(prevMax, smoothed));
+
+        if (DEBUG_MANIFESTO) {
+          const isClosest = g.el === closest.el;
+          if (isClosest) {
+            try {
+              const pctDbg = smoothed <= 0 ? '0%' : (smoothed >= 1 ? '100%' : `${(smoothed * 100).toFixed(4)}%`);
+              console.log('manifesto', {
+                dir: lastDir,
+                t: Number(t.toFixed(3)),
+                desired: Number(desired.toFixed(3)),
+                prevSmooth: Number((prevSmooth ?? 0).toFixed(3)),
+                sm: Number(smoothed.toFixed(3)),
+                pct: pctDbg
+              });
+            } catch {}
+          }
+        }
+
+        // High precision percent and overscan
+        const pct = smoothed <= 0 ? '0%' : (smoothed >= 1 ? '100%' : `${(smoothed * 100).toFixed(4)}%`);
+        const overscanPx = smoothed > 0.98 ? 8 : (smoothed > 0 ? 4 : 0);
+
+        if (smoothed >= 0.97) {
+          // When fully filled, switch to solid text color to eliminate any residual gradient artifacts
+          g.el.style.setProperty('--fill', '100%');
+          g.el.style.backgroundImage = 'none';
+          g.el.style.backgroundSize = '';
+          g.el.style.backgroundPosition = '';
+          // Disable background-clip:text so solid fill paints normally
+          g.el.style.setProperty('background-clip', 'border-box');
+          g.el.style.setProperty('-webkit-background-clip', 'border-box');
+          // Paint solid white text
+          g.el.style.setProperty('-webkit-text-fill-color', '#ffffff');
+          g.el.style.color = '#ffffff';
+        } else {
+          // Partial fill: use gradient clipped to text
+          g.el.style.setProperty('-webkit-text-fill-color', 'transparent');
+          g.el.style.color = 'transparent';
+          // Ensure clipping is active while partially filled
+          g.el.style.setProperty('background-clip', 'text');
+          g.el.style.setProperty('-webkit-background-clip', 'text');
+          g.el.style.backgroundImage = '';
+          g.el.style.backgroundPosition = 'left top, left top';
+          g.el.style.setProperty('--fill', pct);
+          g.el.style.backgroundSize = `calc(${pct} + ${overscanPx}px) 100%, 100% 100%`;
+        }
+        g.el.classList.toggle('active', smoothed >= FULL_LOCK);
       }
       // Advance frontier for reference (not used on up-scroll anymore)
       const val = fillMax.get(closest.el) ?? 0;
       if (val >= FULL_LOCK) frontierElRef.current = closest.el;
-      lastPos = curPos;
-      // If still easing needed and last direction is down, schedule another frame
-      if (needsEase && lastDir === 'down') {
+      lastY = curY;
+      // If still easing needed schedule another frame
+      if (needsEase) {
         requestAnimationFrame(updateManifestoActive);
       }
     }
@@ -679,10 +758,37 @@ export default function Home() {
       if (scheduled) return; scheduled = true;
       requestAnimationFrame(() => { scheduled = false; updateManifestoActive(); });
     };
+
+    // Additional input listeners to capture direction immediately (independent of scroll deltas)
+    const onWheelDir = (e: WheelEvent) => {
+      inputDir = (e.deltaY > 0) ? 'down' : 'up';
+      inputDirTS = performance.now();
+      schedule();
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      try { lastTouchY = e.touches && e.touches.length ? e.touches[0].clientY : lastTouchY; } catch {}
+    };
+    const onTouchDir = (e: TouchEvent) => {
+      try {
+        const y = e.touches && e.touches.length ? e.touches[0].clientY : lastTouchY ?? 0;
+        if (lastTouchY != null) {
+          inputDir = (y < lastTouchY) ? 'down' : 'up';
+          inputDirTS = performance.now();
+        }
+        lastTouchY = y;
+      } catch {}
+      schedule();
+    };
+
     scrollers.forEach((s) => s.addEventListener('scroll', schedule as any, { passive: true } as any));
-    window.addEventListener('wheel', schedule, { passive: true } as any);
-    window.addEventListener('touchmove', schedule, { passive: true } as any);
-    window.addEventListener('resize', schedule);
+    window.addEventListener('wheel', schedule as any, { passive: true } as any);
+    window.addEventListener('touchmove', schedule as any, { passive: true } as any);
+    window.addEventListener('resize', schedule as any);
+
+    window.addEventListener('wheel', onWheelDir as any, { passive: true } as any);
+    window.addEventListener('touchstart', onTouchStart as any, { passive: true } as any);
+    window.addEventListener('touchmove', onTouchDir as any, { passive: true } as any);
+
     return () => {
       try {
         scrollers.forEach((s) => s.removeEventListener('scroll', schedule as any));
@@ -690,6 +796,10 @@ export default function Home() {
       window.removeEventListener('wheel', schedule as any);
       window.removeEventListener('touchmove', schedule as any);
       window.removeEventListener('resize', schedule as any);
+
+      window.removeEventListener('wheel', onWheelDir as any);
+      window.removeEventListener('touchstart', onTouchStart as any);
+      window.removeEventListener('touchmove', onTouchDir as any);
     };
   }, []);
 

@@ -360,6 +360,8 @@ export default function HeroCanvas({ fixed = false, phase = 'hero', onReady, onC
       } catch {}
     };
   }, []);
-
+ 
   return <div style={{ position: fixed ? "fixed" : "absolute", inset: 0, zIndex: 0 }} ref={mountRef} />;
 }
+// Ensure module context for certain TS toolchains
+export {};
